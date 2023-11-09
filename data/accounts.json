@@ -1,0 +1,18 @@
+[
+	{
+		"client_name":"client1",
+		"pin":"0001",
+		"balance":1000
+	},
+	{
+		"client_name":"client2",
+		"pin":"0002",
+		"balance":2000
+	},
+	{
+		"client_name":"client3",
+		"pin":"0003",
+		"balance":3000
+	}
+]
+
