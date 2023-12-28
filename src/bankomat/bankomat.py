@@ -1,29 +1,41 @@
 from bankomat.account import Account
 from bankomat.client import Client
-from bankomat.db import DB
+from bankomat.db_mysql import DB
 
-from typing import List
+from typing import List, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Bankomat:
 	def __init__(self) -> None:
+		# connect to db:
+		self.db = DB()
 		# get accounts data
-		db = DB()
-		self.accounts_list:List[Account] = db.get_all_accounts()
-		self.client_account:Account|None = None
+		self.accounts:List[Account] = self.db.get_all_accounts()
+
+	def __str__(self):
+		msg = f"Bankomat Object\n"
+		accounts_dict = map(lambda a:str(a), self.accounts)
+		msg += f"accounts: {list(accounts_dict)}"
+		return msg
+
 
 	def block_account(self, account:Account) -> None:
 		print(f"{account.client_name} account is blocked!")
 
-	def get_client_name(self) -> str:
-		client_name = input('Enter your name: ')
-		return client_name
 
-	def get_client_account(self, client_name) -> Account|None:
-		matched = [account for account in self.accounts_list if account.client_name==client_name ]
+	def get_client_account(self, client_name) -> Account:
+		# get account from accounts by client_name:
+
+		matched = [account for account in self.accounts
+			 		if account.client_name==client_name ]
+
 		if matched:
 			return matched[0]
 		else:
-			return None
+			raise Exception(f'Client {client_name} did not exists! Bye!')
 
 	def is_valid_client_pin(self) -> bool :
 		max_tries = 3
@@ -40,14 +52,15 @@ class Bankomat:
 
 	def client_login(self) -> bool:
 		# ask client to enter name
-		client_name = self.get_client_name()
+		client_name = Client.enter_name()
 
 		# get client's account details:
-		self.client_account = self.get_client_account(client_name)
-
-		if not self.client_account:
-			print('No such client!')
+		try:
+			self.client_account = self.get_client_account(client_name)
+		except Exception as err:
+			logger.exception(err)
 			exit()
+
 
 		# ask client to enter pin
 		if self.is_valid_client_pin():
@@ -59,6 +72,26 @@ class Bankomat:
 
 	def withdraw(self):
 		# get value to withdraw
-		value = Client.enter_money_value('Enter amount to withdraw', min_value=1, max_value=1_000)
+		amount = Client.enter_money_value('Enter amount to withdraw', min_value=1, max_value=1_000)
+
+		# withdraw if account balance is enough
+		try:
+			self.client_account.withdraw(amount)
+		except Exception as err:
+			logger.exception(f'Error: {err}')
+
+		logger.debug(f'Accounts: {[str(acc) for acc in self.accounts ]}')
+
+		# save to db
+		self.db.save_accounts(self.accounts)
+
+
+	def deposit(self):
+		logger.debug(f'Deposit Money')
+
+	def show_account_details(self):
+		logger.debug('show_account_details')
+
+
 
 

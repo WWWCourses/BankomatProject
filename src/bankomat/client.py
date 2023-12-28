@@ -18,6 +18,10 @@ class Client:
 				return pin
 			else:
 				print(f'PIN must be in range: [{min_pin}-{max_pin}]')
+	@staticmethod
+	def enter_name() -> str:
+		client_name = input('Enter your name: ')
+		return client_name
 
 	@staticmethod
 	def enter_money_value(

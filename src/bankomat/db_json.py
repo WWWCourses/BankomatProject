@@ -1,16 +1,20 @@
-import json
-from typing import List
 from bankomat.account import Account
+import json
+from typing import List, Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 class DB:
-	def __init__(self) -> None:
-		self.accounts_file = '../data/accounts.json'
+	def __init__(self, accounts_file='./data/accounts.json') -> None:
+		self.accounts_file =accounts_file
 
 	def get_all_accounts(self) -> List[Account]:
 		try:
 			with open(self.accounts_file, 'r') as f:
 				# get accounts data:
 				accounts_dict = json.load(f)
+				logger.debug(accounts_dict)
 
 				# convert list of dict to list of Account Instances
 				if accounts_dict:
@@ -18,20 +22,19 @@ class DB:
 				else:
 					return []
 		except Exception as err:
-			print(f'ERROR: {err}')
+			logger.exception(f'Error: {err}')
 			exit()
 
-	def save_accounts(self, accounts_obj:List[Account|None]):
+	def save_accounts(self, accounts:List[Account]):
 		try:
 			with open(self.accounts_file, 'w') as f:
 				# convert list of Account Instances to list of dict:
-				accounts_dict = [acc.__dict__ for acc in accounts_obj]
+				accounts_dict = [acc.to_dict() for acc in accounts]
 
-				json.dump(accounts_dict,f)
+				json.dump(accounts_dict,f,indent=4)
 				print(f"Accounts data has been saved to {self.accounts_file}")
-				return data
 		except Exception as err:
-			print(f'ERROR: {err}')
+			logger.exception(f'Error: {err}')
 			exit()
 
 
