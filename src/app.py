@@ -1,21 +1,40 @@
 from bankomat.db import DB
-from bankomat.account import Account, Accounts
+from bankomat.bankomat import Bankomat
+
+
+LINE_WIDTH = 80
+MENU_OPTIONS = [
+	"Withdraw Money",
+	"Deposit Money",
+	"Show Account Details",
+]
+CURRENCY='$'
+
+def show_client_menu() -> None:
+	# print menu footer
+	print('*'*LINE_WIDTH)
+	# print menu options
+	for idx,option in enumerate(MENU_OPTIONS):
+		print(f'*  {f"{idx+1}. {option}":<{LINE_WIDTH-4}s}*')
+	# print menu footer
+	print('*'*LINE_WIDTH)
+
 
 
 if __name__=="__main__":
-	# create DB connection:
-	db = DB()
+	bankomat = Bankomat()
 
-	# get data
-	accounts_dict = db.get_all_accounts()
-	# print(accounts_dict)
-	accounts = Accounts.from_list_of_dict(accounts_dict)
-	print(accounts)
+	if not bankomat.client_login():
+		print('Client is not logged in!')
+		exit()
 
-	# change first account balance
-	accounts[0].balance = 0
-	for account in accounts:
-		print(account)
+	show_client_menu()
+
+	client_choice = input('Enter your choice: ')
+
+
+
+
 
 
 

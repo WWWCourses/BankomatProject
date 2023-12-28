@@ -9,16 +9,11 @@ class Account:
 	def __str__(self) -> str:
 		return f"{self.__dict__}"
 
+	def withdraw(self, amount):
+		print('Withdraw')
 
+	def depost(self, amount):
+		print('Deposit')
 
-class Accounts:
-	def to_list_of_dict(self):
-		pass
-
-	def from_list_of_dict(self,accounts_dict):
-		return  [Account(d) for d in accounts_dict]
-
-
-
-
-
+	def get_balance(self):
+		return self.balance
