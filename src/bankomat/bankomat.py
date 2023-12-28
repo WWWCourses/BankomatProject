@@ -12,30 +12,22 @@ class Bankomat:
 	def __init__(self) -> None:
 		# connect to db:
 		self.db = DB()
-		# get accounts data
-		self.accounts:List[Account] = self.db.get_all_accounts()
 
 	def __str__(self):
 		msg = f"Bankomat Object\n"
-		accounts_dict = map(lambda a:str(a), self.accounts)
-		msg += f"accounts: {list(accounts_dict)}"
 		return msg
-
 
 	def block_account(self, account:Account) -> None:
 		print(f"{account.client_name} account is blocked!")
 
 
 	def get_client_account(self, client_name) -> Account:
-		# get account from accounts by client_name:
-
-		matched = [account for account in self.accounts
-			 		if account.client_name==client_name ]
-
-		if matched:
-			return matched[0]
-		else:
-			raise Exception(f'Client {client_name} did not exists! Bye!')
+		try:
+			account = self.db.get_account_by_name(client_name)
+			return account
+		except Exception as err:
+			logger.exception(err)
+			raise Exception(f'Client {client_name} does not exist!')
 
 	def is_valid_client_pin(self) -> bool :
 		max_tries = 3
@@ -46,7 +38,6 @@ class Bankomat:
 				return True
 
 			max_tries-=1
-
 
 		return False
 
@@ -77,13 +68,11 @@ class Bankomat:
 		# withdraw if account balance is enough
 		try:
 			self.client_account.withdraw(amount)
+
+			# update db
+			self.db.update_account_balance(self.client_account)
 		except Exception as err:
-			logger.exception(f'Error: {err}')
-
-		logger.debug(f'Accounts: {[str(acc) for acc in self.accounts ]}')
-
-		# save to db
-		self.db.save_accounts(self.accounts)
+			logger.error(f'Error: {err}')
 
 
 	def deposit(self):

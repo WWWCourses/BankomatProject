@@ -28,6 +28,27 @@ class DB:
 			database=self.database
 		)
 
+	def get_account_by_name(self, client_name: str) -> Account:
+		try:
+			connection = self.get_connection()
+			cursor = connection.cursor(dictionary=True)
+
+			query = f"SELECT * FROM accounts WHERE client_name = '{client_name}' LIMIT 1;"
+			cursor.execute(query)
+			account_data = cursor.fetchone()
+			logger.debug(f'account_data: {account_data}')
+
+			cursor.close()
+			connection.close()
+
+			if account_data:
+				return Account(account_data)
+			else:
+				raise Exception(f'Account for client {client_name} not found in the database.')
+		except Exception as err:
+			logger.exception(f'Error: {err}')
+			exit()
+
 	def get_all_accounts(self) -> List[Account]:
 		try:
 			connection = self.get_connection()
@@ -45,6 +66,22 @@ class DB:
 				return accounts
 			else:
 				return []
+		except Exception as err:
+			logger.exception(f'Error: {err}')
+			exit()
+
+	def update_account_balance(self, account_data: Account) -> None:
+		try:
+			connection = self.get_connection()
+			cursor = connection.cursor()
+
+			query = f"UPDATE accounts SET balance = {account_data.balance} WHERE client_name = '{account_data.client_name}';"
+			cursor.execute(query)
+			logger.debug(f"Account {account_data.client_name} balance updated in the database.")
+
+			connection.commit()
+			cursor.close()
+			connection.close()
 		except Exception as err:
 			logger.exception(f'Error: {err}')
 			exit()
@@ -78,5 +115,4 @@ class DB:
 
 if __name__ == "__main__":
 	db_mysql = DB()
-	data_mysql = db_mysql.get_all_accounts()
 	print(data_mysql)
